@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2a6b"/>
+      <stop offset="0.55" stop-color="#0a6fa8"/>
+      <stop offset="1" stop-color="#00c2a8"/>
+    </linearGradient>
+    <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="30" fill="url(#bg)"/>
+  <rect x="4" y="4" width="120" height="60" rx="30" fill="url(#gl)"/>
+  <!-- X en traits épais -->
+  <path d="M36 36 L92 92 M92 36 L36 92" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+  <!-- lentille au croisement -->
+  <circle cx="64" cy="64" r="15" fill="#1b2a6b" stroke="#ffc83d" stroke-width="6"/>
+  <circle cx="64" cy="64" r="4.5" fill="#ffc83d"/>
+</svg>
