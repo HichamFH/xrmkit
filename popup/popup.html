@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Xrmkit</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="../icons/logo.svg" class="mark" alt="">
+    <div class="title"><div class="logo">Xrmkit</div><div class="by">par HichamFH</div></div>
+    <div id="status" class="status">Connexion…</div>
+  </header>
+
+  <section>
+    <h2>Formulaire</h2>
+    <div class="grid">
+      <button data-act="godMode"><span class="i" data-i="bolt"></span> God Mode</button>
+      <button data-act="names"><span class="i" data-i="tag"></span> Noms logiques</button>
+      <button data-act="optionSets"><span class="i" data-i="hash"></span> Valeurs option sets</button>
+      <button data-act="dirty"><span class="i" data-i="pencil"></span> Champs modifiés</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Copier</h2>
+    <div class="grid">
+      <button data-act="copyId"><span class="i" data-i="id"></span> ID</button>
+      <button data-act="copyUrl"><span class="i" data-i="link"></span> URL enregistrement</button>
+      <button data-act="copyEntity"><span class="i" data-i="folder"></span> Nom d'entité</button>
+      <button data-act="copyApi"><span class="i" data-i="globe"></span> URL API Web</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Naviguer</h2>
+    <div class="row">
+      <input id="etn" placeholder="entité (ex. account)" spellcheck="false">
+      <input id="rid" placeholder="GUID (optionnel)" spellcheck="false">
+    </div>
+    <div class="grid">
+      <button data-act="openRecord"><span class="i" data-i="file"></span> Ouvrir l'enregistrement</button>
+      <button data-act="openList"><span class="i" data-i="list"></span> Ouvrir la liste</button>
+      <button data-act="advFind"><span class="i" data-i="search"></span> Recherche avancée</button>
+      <button data-act="envInfo"><span class="i" data-i="info"></span> Infos environnement</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Support &amp; analyse</h2>
+    <div class="grid">
+      <button data-act="bugReport"><span class="i" data-i="bug"></span> Bug report (capture)</button>
+      <button data-act="wbImpact"><span class="i" data-i="network"></span> Analyse d'impact</button>
+      <button data-act="wbAudit"><span class="i" data-i="receipt"></span> Historique d'audit</button>
+      <button data-act="wbInspect"><span class="i" data-i="stethoscope"></span> Inspecteur de formulaire</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Avancé</h2>
+    <div class="grid">
+      <button data-act="workbench" class="primary"><span class="i" data-i="rocket"></span> Ouvrir le Workbench</button>
+      <button data-act="wbChat"><span class="i" data-i="chat"></span> Chat IA</button>
+      <button data-act="clearCache"><span class="i" data-i="broom"></span> Vider le cache</button>
+    </div>
+    <p class="hint">Workbench : requêtes, données, analyse d'impact, plug-ins, audit, sécurité, dictionnaire de données, comparaison d'environnements, chat IA contextuel (Claude, ChatGPT, Cloudflare).</p>
+  </section>
+
+  <footer><span data-i18n>Développé par</span> <b>HichamFH</b> · v0.8.1 · <button id="plang" class="linkbtn" title="Langue">FR</button></footer>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <div id="modal" class="modal" hidden>
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head"><h3 id="mtitle"></h3><button id="mclose" class="x" title="Fermer (Échap)"><span data-i="x"></span></button></div>
+      <div id="mbody" class="sheet-body"></div>
+      <div class="sheet-foot"><button id="mcopy">Copier</button><button id="mok" class="primary">Fermer</button></div>
+    </div>
+  </div>
+  <script src="../workbench/icons.js"></script>
+  <script src="../workbench/i18n.js"></script>
+  <script src="../workbench/i18n-en.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
