@@ -491,8 +491,10 @@ await Xrm.WebApi.updateRecord("${entity}", created.id, { /* colonnes */ });
     return items.filter((it) => it.active !== false && (it.triggers || []).some((t) => t.entity === e && t.events.includes(event) && (event !== 'Update' || filterHit(t.filter || [], fields || []))));
   };
   // Arbre des déclenchements en cascade à partir de « événement sur table » ; boucle détectée → loop:true.
-  DK.cascade = (items, entity, event, maxDepth = 4) => {
+  DK.cascade = (items, entity, event, maxDepth = 4, budget = 400) => {
+    let left = budget, truncated = false;
     const build = (ents, depth, path, via) => ents.map((it) => {
+      if (left-- <= 0) { truncated = true; return null; }
       const loop = path.includes(it.id);
       const node = { item: it, via, depth, loop, children: [] };
       if (!loop && depth < maxDepth) {
@@ -503,8 +505,10 @@ await Xrm.WebApi.updateRecord("${entity}", created.id, { /* colonnes */ });
         });
       }
       return node;
-    });
-    return build(DK.triggeredBy(items, entity, event, []), 0, [], { from: '', entity, event, action: '' });
+    }).filter(Boolean);
+    const res = build(DK.triggeredBy(items, entity, event, []), 0, [], { from: '', entity, event, action: '' });
+    res.truncated = truncated;
+    return res;
   };
   DK.flattenCascade = (nodes) => {
     const out = [];
