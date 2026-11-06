@@ -142,3 +142,12 @@ Pour un onglet lourd : `Xrmkit.lazy('id', ['fichier.js'])` charge le script au p
 
 ## v0.8.2 — icônes
 Les émojis sont remplacés par un jeu d'icônes SVG maison (`workbench/icons.js` : traits arrondis, aplat translucide, touche d'accent orange). `xicon('nom')` renvoie le SVG ; `<span data-i="nom">` + `xicon.mount()` dans le HTML. Un onglet enregistré via `registerTab({ icon: 'nom' })` peut utiliser n'importe quelle icône de `XI` (un émoji reste accepté).
+
+## v0.9.0 — Cartographie, rapport d'accès, rapports Word sur modèle
+- **Cartographie des processus** (Technique) : pour une table, plug-ins, flux cloud, workflows et règles dans l'ordre d'exécution Dataverse (diagramme SVG), cascades entre tables (un flux qui écrit dans une autre table déclenche d'autres automatisations), détection de boucles et points d'attention. Exports Word, Excel, SVG et Mermaid. Les plug-ins ne sont pas analysés en profondeur (leur code peut écrire ailleurs sans que Xrmkit le voie).
+- **Rapport d'accès utilisateur** (Sécurité) : rôles directs et via équipes, droits effectifs par table (Créer / Lire / Écrire / Supprimer / Ajouter à / Ajouter / Attribuer / Partager, avec le niveau Utilisateur / UC / UC+ / Organisation), droits sensibles, points d'attention. Calcul par `RetrieveUserPrivileges`, avec repli sur les privilèges des rôles. Exports Word et Excel.
+- **Rapports Word à partir de votre modèle** (cartographie, rapport d'accès, dictionnaire de données) : importez un `.docx`/`.dotx` contenant des balises, Xrmkit le remplit et conserve votre mise en forme (styles, logo, en-tête, pied de page).
+  - Valeur : `{{utilisateur}}`, `{{objet.champ}}`. Boucle : `{{#roles}} … {{/roles}}` autour d'une ligne de tableau (la ligne est répétée), de paragraphes, ou en ligne ; les boucles s'imbriquent. La même syntaxe sert de condition pour une valeur non liste.
+  - Chaque rapport propose un **modèle de départ** à télécharger et la liste des balises (clic = copie). Les balises inconnues du modèle sont signalées à l'import et à la génération.
+  - Les modèles (3 Mo max) restent dans `chrome.storage.local` ; aucun envoi réseau. Aucune dépendance : lecture ZIP via `DecompressionStream`.
+- À valider sur un vrai environnement : `RetrieveUserPrivileges`, requêtes de collecte des flux/étapes (testées avec un faux backend uniquement).
