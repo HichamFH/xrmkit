@@ -257,3 +257,6 @@ I18N.add('en', {
   'Contourner la logique métier personnalisée': 'Bypass custom business logic', 'Exporter vers Excel': 'Export to Excel', 'Suppression en masse': 'Bulk delete',
   'Publier les personnalisations': 'Publish customizations', 'Importer des personnalisations': 'Import customizations',
 });
+I18N.addPatterns('en', [
+  [/^(\d+) ligne\(s\)( \(1000 affichées, filtrez ou exportez\))?$/, (m) => `${m[1]} row(s)` + (m[2] ? ' (1000 shown, filter or export)' : '')],
+]);

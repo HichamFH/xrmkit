@@ -120,7 +120,7 @@ async function accessTab(root) {
         m.warns.length ? h('p', { class: 'error' }, 'Collecte incomplète (droits insuffisants ?) : ' + m.warns.join(' | ')) : null,
         kvTable({ Compte: info.domainname, 'E-mail': info.internalemailaddress, Fonction: info.jobtitle, 'Unité commerciale': info.businessunitid && info.businessunitid.name, Responsable: info.parentsystemuserid && info.parentsystemuserid.fullname, Désactivé: info.isdisabled, 'Droits calculés par': m.source }),
         h('h2', {}, 'Points d\'attention'),
-        m.findings.length ? h('div', {}, ...m.findings.map(([g, msg]) => h('p', { class: sev[g] }, (g === 'haute' ? '⚠ ' : '• ') + msg))) : h('p', { class: 'ok' }, 'Aucun point d\'attention détecté.'),
+        m.findings.length ? h('div', {}, ...m.findings.map(([g, msg]) => h('p', { class: sev[g] }, g === 'haute' ? '⚠ ' : '• ', msg))) : h('p', { class: 'ok' }, 'Aucun point d\'attention détecté.'),
         h('h2', {}, `Rôles (${accessRoleRows(m).length})`),
         dataTable(accessRoleRows(m), { exportName: 'roles-utilisateur', empty: 'Aucun rôle.' }),
         h('h2', {}, `Équipes (${m.teams.length})`),

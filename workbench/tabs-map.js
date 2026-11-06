@@ -207,7 +207,7 @@ async function pmapTab(root) {
         h('div', { class: 'toolbar' },
           h('span', { class: 'badge' }, `${m.own.length} automatisation(s)`), h('span', { class: 'badge' }, `${m.own.filter((i) => i.sync).length} synchrone(s)`),
           h('span', { class: 'badge' }, `${m.cascades.length} déclenchement(s) en cascade`), h('span', { class: 'badge' }, `${m.findings.length} point(s) d'attention`)),
-        m.findings.length ? h('div', {}, h('h2', {}, 'Points d\'attention'), ...m.findings.map(([g, msg]) => h('p', { class: sev[g] }, (g === 'haute' ? '⚠ ' : '• ') + msg))) : h('p', { class: 'ok' }, 'Aucun point d\'attention détecté sur les automatisations connues.'),
+        m.findings.length ? h('div', {}, h('h2', {}, 'Points d\'attention'), ...m.findings.map(([g, msg]) => h('p', { class: sev[g] }, g === 'haute' ? '⚠ ' : '• ', msg))) : h('p', { class: 'ok' }, 'Aucun point d\'attention détecté sur les automatisations connues.'),
         h('h2', {}, 'Ordre d\'exécution'),
         h('p', { class: 'muted' }, 'Dataverse exécute : règles → pré-validation → pré-opération → opération → post-opération synchrone ; puis, en différé, plug-ins asynchrones, flux et workflows asynchrones. Les composants désactivés sont en pointillés.'),
         h('div', { class: 'scroll', style: 'background:#fff;border-radius:10px;padding:6px' }, svgNode(pmapSvg(m, evLabel))),

@@ -133,7 +133,7 @@ function dataTable(data, { onRow, empty = 'Aucun résultat.', exportName = 'expo
       });
     }
     const shown = view.slice(0, 1000);
-    info.textContent = `${view.length} ligne(s)` + (view.length > 1000 ? ' (1000 affichées, filtrez ou exportez)' : '');
+    info.textContent = T(`${view.length} ligne(s)` + (view.length > 1000 ? ' (1000 affichées, filtrez ou exportez)' : ''));
     table.replaceChildren(
       h('thead', {}, h('tr', {}, cols.map((c) => h('th', { onclick: () => { asc = sortCol === c ? !asc : true; sortCol = c; draw(); } }, c + (sortCol === c ? (asc ? ' ▲' : ' ▼') : ''))))),
       h('tbody', {}, shown.map((r) => h('tr', { class: onRow ? 'clickable' : '', onclick: onRow ? () => onRow(r) : null }, cols.map((c) => h('td', { title: fmt(r[c]) }, fmt(r[c])))))));
