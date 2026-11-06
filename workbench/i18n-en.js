@@ -260,3 +260,8 @@ I18N.add('en', {
 I18N.addPatterns('en', [
   [/^(\d+) ligne\(s\)( \(1000 affichées, filtrez ou exportez\))?$/, (m) => `${m[1]} row(s)` + (m[2] ? ' (1000 shown, filter or export)' : '')],
 ]);
+I18N.add('en', {
+  'Valeurs formatées': 'Formatted values',
+  'Ctrl+Entrée pour exécuter. Les requêtes passent par la session de l\'onglet Dynamics (impersonation appliquée si active).': 'Ctrl+Enter to run. Requests go through the Dynamics tab session (impersonation applied when active).',
+});
+I18N.addPatterns('en', [[/^Équipe : (.+)$/, (m) => `Team: ${m[1]}`]]);
