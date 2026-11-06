@@ -1,0 +1,8 @@
+{
+  "extName": {
+    "message": "Xrmkit for Dynamics 365"
+  },
+  "extDesc": {
+    "message": "Toolbox for Dynamics 365: query data, trace impact, map automations, review security, compare environments, document solutions."
+  }
+}
