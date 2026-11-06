@@ -269,3 +269,4 @@ I18N.add('en', {
   'Ajouter les tables personnalisées': 'Add custom tables', 'Vider': 'Clear',
   "Génère la documentation des tables : colonnes (type, requis, audit, sécurité, description), listes de valeurs et relations. La colonne « Description » reprend les descriptions Dataverse : complétez-les dans les métadonnées pour enrichir le document.": 'Generates table documentation: columns (type, required, audit, security, description), value lists and relationships. The “Description” column reuses Dataverse descriptions: fill them in the metadata to enrich the document.',
 });
+I18N.add('en', { 'Méthode de calcul des droits': 'How rights were computed', 'Personnalisée': 'Custom', 'Table liée': 'Related table' });
