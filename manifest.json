@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Xrmkit pour Dynamics 365",
   "short_name": "Xrmkit",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "description": "Par HichamFH. Boîte à outils pour les applications Dynamics 365 pilotées par modèle : God Mode, FetchXML/OData, analyse d'impact, plug-ins, audit, sécurité, dictionnaire de données, comparaison d'environnements, assistant IA.",
   "minimum_chrome_version": "111",
   "icons": {
