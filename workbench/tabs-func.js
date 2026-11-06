@@ -91,6 +91,32 @@ tabs.doc = async (root) => {
     list.value = [...new Set([...parseNames(list.value), ...custom])].join(', ');
   };
 
+  const DOC_SPEC = {
+    key: 'doc', fileName: 'dictionnaire', title: 'Dictionnaire de données',
+    vars: [['environnement', 'Environnement'], ['date', 'Date de génération'], ['nb_tables', 'Nombre de tables'], ['nb_colonnes', 'Nombre total de colonnes']],
+    lists: [
+      { name: 'tables', desc: 'Tables', fields: [['nom_logique', 'Nom logique'], ['libelle', 'Libellé'], ['description', 'Description'], ['entity_set', 'Entity set'], ['personnalisee', 'Personnalisée'], ['colonne_id', 'Colonne ID'], ['colonne_nom', 'Colonne nom principale'], ['nb_colonnes', 'Nombre de colonnes']] },
+      { name: 'colonnes', parent: 'tables', desc: 'Colonnes', fields: [['nom_logique', 'Nom logique'], ['libelle', 'Libellé'], ['type', 'Type'], ['requis', 'Requis'], ['description', 'Description']] },
+      { name: 'valeurs', parent: 'tables', desc: 'Listes de valeurs', fields: [['champ', 'Champ'], ['valeur', 'Valeur'], ['libelle', 'Libellé']] },
+      { name: 'relations', parent: 'tables', desc: 'Relations', fields: [['type', 'Type'], ['nom', 'Relation'], ['table_liee', 'Table liée'], ['champ', 'Champ']] },
+    ],
+    getData: async () => {
+      const m = await collect();
+      if (!m.items.length) throw new Error('Aucune table exploitable.\n' + m.errs.join('\n'));
+      const tables = m.items.map((it) => {
+        const c = colRows(it);
+        return {
+          nom_logique: it.e, libelle: label(it.meta.DisplayName), description: label(it.meta.Description), entity_set: it.meta.EntitySetName, personnalisee: yesNo(it.meta.IsCustomEntity),
+          colonne_id: it.meta.PrimaryIdAttribute, colonne_nom: it.meta.PrimaryNameAttribute, nb_colonnes: c.length,
+          colonnes: c.map((a) => ({ nom_logique: a.LogicalName, libelle: label(a.DisplayName), type: a.AttributeType, requis: (a.RequiredLevel && a.RequiredLevel.Value) || '', description: label(a.Description) })),
+          valeurs: it.os.map((o) => ({ champ: o.Champ, valeur: o.Valeur, libelle: o['Libellé'] })),
+          relations: relRows(it).map((r) => ({ type: r[0], nom: r[1], table_liee: r[2], champ: r[3] })),
+        };
+      });
+      return { environnement: orgName(), date: new Date().toLocaleString('fr-FR'), nb_tables: tables.length, nb_colonnes: tables.reduce((n, t) => n + t.nb_colonnes, 0), tables };
+    },
+  };
+
   root.append(
     h('p', { class: 'muted' }, 'Génère la documentation des tables : colonnes (type, requis, audit, sécurité, description), listes de valeurs et relations. La colonne « Description » reprend les descriptions Dataverse : complétez-les dans les métadonnées pour enrichir le document.'),
     list,
@@ -100,5 +126,5 @@ tabs.doc = async (root) => {
     h('div', { class: 'toolbar' },
       h('button', { class: 'primary', onclick: () => exportAs('xlsx') }, 'Exporter en Excel (.xlsx)'),
       h('button', { class: 'primary', onclick: () => exportAs('docx') }, 'Exporter en Word (.docx)')),
-    prog, out);
+    prog, out, Reports.panel(DOC_SPEC));
 };
