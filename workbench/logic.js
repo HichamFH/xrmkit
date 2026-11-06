@@ -379,6 +379,172 @@ await Xrm.WebApi.updateRecord("${entity}", created.id, { /* colonnes */ });
     throw new Error('Type inconnu : ' + kind);
   };
 
+  // ---------------------------------------------------------------- Droits (rapport d'accès)
+  DK.DEPTHS = ['Utilisateur', 'Unité commerciale', 'UC et enfants', 'Organisation'];
+  DK.DEPTH_SHORT = ['Util.', 'UC', 'UC+', 'Org'];
+  DK.VERBS = ['Create', 'Read', 'Write', 'Delete', 'Append', 'AppendTo', 'Assign', 'Share'];
+  DK.VERB_FR = { Create: 'Créer', Read: 'Lire', Write: 'Écrire', Delete: 'Supprimer', Append: 'Ajouter à', AppendTo: 'Ajouter', Assign: 'Attribuer', Share: 'Partager' };
+  // Profondeur renvoyée par la Web API : texte (« Basic », « Global »…) ou nombre (0–3). -1 si inconnue.
+  DK.depthRank = (d) => {
+    if (typeof d === 'number') return d >= 0 && d <= 3 ? d : -1;
+    const i = ['basic', 'local', 'deep', 'global'].indexOf(String(d || '').toLowerCase());
+    return i;
+  };
+  // « prvReadAccount » → { verb: 'Read', entity: 'account' } ; null si ce n'est pas un droit sur table.
+  DK.parsePrivilege = (name) => {
+    const m = /^prv(Create|Read|Write|Delete|AppendTo|Append|Assign|Share)(.+)$/.exec(String(name || ''));
+    return m ? { verb: m[1], entity: m[2].toLowerCase() } : null;
+  };
+  // privs : [{ PrivilegeName, Depth }] ; knownTables : noms logiques connus (pour séparer les droits « hors table »).
+  // Retourne { rows: [{ table, Create: 0..3|-1|null, … }], other: [{ name, depth }] } ; la profondeur la plus haute l'emporte.
+  DK.accessMatrix = (privs, knownTables) => {
+    const known = new Set((knownTables || []).map((t) => t.toLowerCase()));
+    const byTable = new Map(), other = new Map();
+    (privs || []).forEach((p) => {
+      const pp = DK.parsePrivilege(p.PrivilegeName), rank = DK.depthRank(p.Depth);
+      if (pp && (!known.size || known.has(pp.entity))) {
+        if (!byTable.has(pp.entity)) byTable.set(pp.entity, { table: pp.entity });
+        const row = byTable.get(pp.entity);
+        row[pp.verb] = Math.max(row[pp.verb] == null ? -1 : row[pp.verb], rank);
+      } else {
+        const k = p.PrivilegeName;
+        other.set(k, Math.max(other.has(k) ? other.get(k) : -1, rank));
+      }
+    });
+    return {
+      rows: [...byTable.values()].sort((a, b) => a.table.localeCompare(b.table)),
+      other: [...other.entries()].map(([name, depth]) => ({ name, depth })).sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  };
+  DK.SENSITIVE_PRIVS = {
+    prvActOnBehalfOfAnotherUser: 'Agir au nom d\'un autre utilisateur (usurpation)',
+    prvBypassCustomPlugins: 'Contourner les plug-ins personnalisés',
+    prvBypassCustomBusinessLogic: 'Contourner la logique métier personnalisée',
+    prvAllowQuickCampaign: null, prvExportToExcel: 'Exporter vers Excel',
+    prvBulkDelete: 'Suppression en masse', prvPublishCustomizations: 'Publier les personnalisations',
+    prvImportCustomizations: 'Importer des personnalisations', prvCreateAuditPartition: null,
+  };
+  DK.accessFindings = (matrix, roles) => {
+    const f = [];
+    const rows = matrix.rows;
+    const del = rows.filter((r) => r.Delete === 3).map((r) => r.table);
+    const write = rows.filter((r) => r.Write === 3).length, read = rows.filter((r) => r.Read === 3).length;
+    if ((roles || []).some((r) => /^(system administrator|administrateur système)$/i.test(r))) f.push(['haute', 'Rôle « Administrateur système » : accès complet à tout l\'environnement.']);
+    if (del.length) f.push([del.length >= 20 ? 'haute' : 'moyenne', `Suppression au niveau Organisation sur ${del.length} table(s)${del.length <= 8 ? ' : ' + del.join(', ') : ''}.`]);
+    if (write >= 50) f.push(['moyenne', `Écriture au niveau Organisation sur ${write} tables.`]);
+    if (read >= 100) f.push(['info', `Lecture au niveau Organisation sur ${read} tables.`]);
+    matrix.other.forEach((o) => { const d = DK.SENSITIVE_PRIVS[o.name]; if (d) f.push(['moyenne', `Droit sensible : ${d} (${o.name}).`]); });
+    return f;
+  };
+
+  // ---------------------------------------------------------------- Cartographie des processus
+  const EV = { 1: ['Create'], 2: ['Delete'], 3: ['Update'], 4: ['Create', 'Update'], 5: ['Create', 'Delete'], 6: ['Update', 'Delete'], 7: ['Create', 'Update', 'Delete'] };
+  DK.EVENT_FR = { Create: 'Création', Update: 'Modification', Delete: 'Suppression', Other: 'Autre' };
+  const OPS = { CreateRecord: 'Create', UpdateRecord: 'Update', UpdateOnlyRecord: 'Update', DeleteRecord: 'Delete', GetItem: 'Read', ListRecords: 'Read' };
+  const walkActions = (acts, fn) => {
+    Object.entries(acts || {}).forEach(([k, a]) => {
+      if (!a || typeof a !== 'object') return;
+      fn(k, a);
+      walkActions(a.actions, fn);
+      if (a.else) walkActions(a.else.actions, fn);
+      if (a.default) walkActions(a.default.actions, fn);
+      if (a.cases) Object.values(a.cases).forEach((c) => walkActions(c && c.actions, fn));
+    });
+  };
+  const normField = (k) => String(k).replace(/^item\//, '').replace(/@odata\.bind$/i, '').toLowerCase();
+  // clientdata d'un flux cloud → { trigger: { entity, events, filter, text }, writes: [{ entity, entitySet, event, fields, action }], children: [nom] }
+  // `setToLogical` (optionnel) convertit un nom d'ensemble (accounts) en nom logique (account).
+  DK.flowGraph = (clientdata, setToLogical) => {
+    const res = { trigger: { entity: '', events: [], filter: [], text: '' }, writes: [], reads: [], children: [], actions: 0 };
+    try {
+      const j = typeof clientdata === 'string' ? JSON.parse(clientdata) : clientdata;
+      const def = (j.properties && j.properties.definition) || j.definition || {};
+      const tk = Object.keys(def.triggers || {})[0], tr = (def.triggers || {})[tk] || {};
+      const prm = (tr.inputs && tr.inputs.parameters) || {};
+      if (prm['subscriptionRequest/message'] != null) {
+        res.trigger.entity = String(prm['subscriptionRequest/entityname'] || '').toLowerCase();
+        res.trigger.events = EV[Number(prm['subscriptionRequest/message'])] || ['Other'];
+        res.trigger.filter = String(prm['subscriptionRequest/filteringattributes'] || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+        res.trigger.text = 'Dataverse : ' + res.trigger.events.map((e) => DK.EVENT_FR[e].toLowerCase()).join(' / ');
+      } else if (tr.recurrence) res.trigger.text = `Planifié (${tr.recurrence.frequency} ×${tr.recurrence.interval})`;
+      else if (tr.type === 'Request' || /manual/i.test(tk || '')) res.trigger.text = 'Manuel / à la demande';
+      else res.trigger.text = tk ? tk.replace(/_/g, ' ') : '';
+      walkActions(def.actions, (name, a) => {
+        res.actions++;
+        const host = (a.inputs && a.inputs.host) || {}, p = (a.inputs && a.inputs.parameters) || {};
+        if (a.type === 'Workflow' && host.workflowReferenceName) { res.children.push(String(host.workflowReferenceName)); return; }
+        const ev = OPS[host.operationId];
+        if (!ev || !p.entityName) return;
+        const set = String(p.entityName).toLowerCase();
+        const entity = (setToLogical && setToLogical[set]) || set;
+        const fields = Object.keys(p).filter((k) => k.startsWith('item/')).map(normField);
+        (ev === 'Read' ? res.reads : res.writes).push({ entity, entitySet: set, event: ev, fields, action: name.replace(/_/g, ' ') });
+      });
+    } catch (e) { /* définition illisible : trigger vide */ }
+    return res;
+  };
+
+  // item : { id, kind, name, state, lane, triggers: [{ entity, events:[…], filter:[…] }], writes: [{ entity, event, fields }] }
+  const filterHit = (filter, fields) => !filter.length || !fields.length || fields.some((f) => filter.some((a) => f === a || f.startsWith(a + '_')));
+  DK.triggeredBy = (items, entity, event, fields) => {
+    const e = String(entity).toLowerCase();
+    return items.filter((it) => it.active !== false && (it.triggers || []).some((t) => t.entity === e && t.events.includes(event) && (event !== 'Update' || filterHit(t.filter || [], fields || []))));
+  };
+  // Arbre des déclenchements en cascade à partir de « événement sur table » ; boucle détectée → loop:true.
+  DK.cascade = (items, entity, event, maxDepth = 4) => {
+    const build = (ents, depth, path, via) => ents.map((it) => {
+      const loop = path.includes(it.id);
+      const node = { item: it, via, depth, loop, children: [] };
+      if (!loop && depth < maxDepth) {
+        (it.writes || []).forEach((w) => {
+          const next = DK.triggeredBy(items, w.entity, w.event, w.fields);
+          const kids = build(next, depth + 1, [...path, it.id], { from: it.name, entity: w.entity, event: w.event, action: w.action });
+          node.children.push(...kids);
+        });
+      }
+      return node;
+    });
+    return build(DK.triggeredBy(items, entity, event, []), 0, [], { from: '', entity, event, action: '' });
+  };
+  DK.flattenCascade = (nodes) => {
+    const out = [];
+    const rec = (ns) => ns.forEach((n) => { out.push(n); rec(n.children); });
+    rec(nodes);
+    return out;
+  };
+  DK.mermaid = (nodes, rootLabel) => {
+    const ids = new Map(), lines = ['flowchart LR'], edges = new Set();
+    const q = (x) => '"' + String(x).replace(/"/g, "'").replace(/[\r\n]+/g, ' ') + '"';
+    const id = (it) => {
+      if (!ids.has(it.id)) { ids.set(it.id, 'n' + ids.size); lines.push(`  ${ids.get(it.id)}[${q(it.kind + ' : ' + it.name)}]`); }
+      return ids.get(it.id);
+    };
+    lines.push(`  root(${q(rootLabel)})`);
+    const rec = (ns, parent) => ns.forEach((n) => {
+      const nid = id(n.item), label = (n.via.event ? `${DK.EVENT_FR[n.via.event]} ${n.via.entity}` : '') + (n.loop ? ' (boucle)' : ''), key = `${parent}|${nid}|${label}`;
+      if (!edges.has(key)) { edges.add(key); lines.push(`  ${parent} -->|${q(label)}| ${nid}`); }
+      if (!n.loop) rec(n.children, nid);
+    });
+    rec(nodes, 'root');
+    return lines.join('\n');
+  };
+  // Points d'attention sur les automatisations d'une table.
+  DK.processFindings = (items, entity, flat) => {
+    const f = [], e = String(entity).toLowerCase();
+    const here = items.filter((it) => (it.triggers || []).some((t) => t.entity === e));
+    flat.filter((n) => n.loop).forEach((n) => f.push(['haute', `Boucle possible : « ${n.item.name} » se redéclenche via ${DK.EVENT_FR[n.via.event].toLowerCase()} sur ${n.via.entity}.`]));
+    here.filter((it) => it.kind === 'Flux' && it.active !== false).forEach((it) => {
+      if ((it.writes || []).some((w) => w.entity === e && w.event === 'Update') && (it.triggers || []).some((t) => t.entity === e && t.events.includes('Update') && !t.filter.length)) f.push(['haute', `Flux « ${it.name} » : modifie ${e} sans filtre d'attributs sur son propre déclencheur (risque de boucle).`]);
+    });
+    const sync = here.filter((it) => it.sync && it.active !== false);
+    const upd = sync.filter((it) => it.kind === 'Plug-in' && (it.triggers || []).some((t) => t.events.includes('Update') && !t.filter.length));
+    if (upd.length) f.push(['moyenne', `${upd.length} plug-in(s) synchrone(s) sur la modification sans filtre d'attributs : ${upd.slice(0, 5).map((x) => x.name).join(', ')}${upd.length > 5 ? '…' : ''}.`]);
+    if (sync.length >= 6) f.push(['moyenne', `${sync.length} automatisations synchrones sur cette table : la durée d'enregistrement s'additionne.`]);
+    const off = here.filter((it) => it.active === false);
+    if (off.length) f.push(['info', `${off.length} automatisation(s) désactivée(s) ou en brouillon : ${off.slice(0, 6).map((x) => x.name).join(', ')}${off.length > 6 ? '…' : ''}.`]);
+    return f;
+  };
+
   g.DK = DK;
   if (typeof module !== 'undefined' && module.exports) module.exports = DK;
 })(typeof window !== 'undefined' ? window : globalThis);
