@@ -59,7 +59,7 @@ async function accessCollect(user, progress) {
   return { id, info, direct, teams, matrix, findings: DK.accessFindings(matrix, roleNames), warns, source, meta, nbPrivs: privs.length };
 }
 
-const accessCell = (v) => (v == null ? '—' : v < 0 ? '?' : DK.DEPTH_SHORT[v]);
+const accessCell = (v) => (v == null ? '-' : v < 0 ? '?' : DK.DEPTH_SHORT[v]);
 function accessRows(m, onlyCustom) {
   return m.matrix.rows.filter((r) => !onlyCustom || (m.meta[r.table] && m.meta[r.table].IsCustomEntity)).map((r) => ({
     Table: r.table, Libellé: label(m.meta[r.table] && m.meta[r.table].DisplayName), Créer: accessCell(r.Create), Lire: accessCell(r.Read), Écrire: accessCell(r.Write), Supprimer: accessCell(r.Delete),
@@ -126,7 +126,7 @@ async function accessTab(root) {
         h('h2', {}, `Équipes (${m.teams.length})`),
         dataTable(m.teams.map((t) => ({ Équipe: t.name, Type: ACCESS_TEAM_TYPES[t.teamtype] || t.teamtype, Rôles: (t.roles || []).map((r) => r.name).join(', ') })), { exportName: 'equipes-utilisateur', empty: 'Aucune équipe.' }),
         h('h2', {}, 'Droits par table'),
-        h('p', { class: 'muted' }, 'Niveau le plus élevé obtenu par cumul des rôles et des équipes : Util. = ses propres enregistrements, UC = son unité commerciale, UC+ = UC et enfants, Org = toute l\'organisation, — = aucun droit.'),
+        h('p', { class: 'muted' }, 'Niveau le plus élevé obtenu par cumul des rôles et des équipes : Util. = ses propres enregistrements, UC = son unité commerciale, UC+ = UC et enfants, Org = toute l\'organisation, - = aucun droit.'),
         h('div', { class: 'toolbar' }, h('label', { class: 'inline' }, customChk, 'Tables personnalisées seulement')),
         matrixHost,
         m.matrix.other.length ? h('div', {}, h('h2', {}, `Autres droits (${m.matrix.other.length})`), dataTable(m.matrix.other.map((o) => ({ Droit: o.name, Niveau: o.depth < 0 ? '?' : DK.DEPTHS[o.depth], Sensible: DK.SENSITIVE_PRIVS[o.name] ? 'oui' : '' })), { exportName: 'autres-droits' })) : null);

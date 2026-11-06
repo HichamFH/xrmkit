@@ -107,7 +107,7 @@ function pmapRows(m) {
   const laneName = Object.fromEntries([...PMAP_LANES, ['autre', 'À la demande / processus']]);
   const order = ['client', 'pre-val', 'pre-op', 'main', 'post-sync', 'async', 'autre'];
   return [...m.own].sort((a, b) => order.indexOf(a.lane) - order.indexOf(b.lane) || (a.rank || 0) - (b.rank || 0) || a.name.localeCompare(b.name)).map((it) => ({
-    Étape: laneName[it.lane] || it.lane, Type: it.kind, Nom: it.name, Mode: it.mode, Événement: pmapEvents(it, m.entity) || '—', 'Filtre (attributs)': pmapFilter(it, m.entity),
+    Étape: laneName[it.lane] || it.lane, Type: it.kind, Nom: it.name, Mode: it.mode, Événement: pmapEvents(it, m.entity) || '-', 'Filtre (attributs)': pmapFilter(it, m.entity),
     État: it.state, 'Effets sur d\'autres tables': pmapEffects(it), Rang: it.rank ?? '',
   }));
 }
