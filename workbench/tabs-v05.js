@@ -46,7 +46,7 @@ const CMP_DEFS = {
 const CMP_INFO_ONLY = ['Variables d\'environnement (valeurs actuelles)']; // différences attendues : affichées mais séparées
 
 async function discoverOtherEnvs() {
-  const found = await chrome.tabs.query({ url: ['https://*.dynamics.com/*', 'https://*.dynamics.us/*', 'https://*.dynamics.cn/*', 'https://*.appsplatform.us/*'] });
+  const found = await chrome.tabs.query({ url: ['https://*.dynamics.com/*', 'https://*.microsoftdynamics.us/*', 'https://*.dynamics.cn/*', 'https://*.appsplatform.us/*'] });
   const mine = await call('envInfo').catch(() => ({}));
   const out = new Map();
   for (const t of found) {
