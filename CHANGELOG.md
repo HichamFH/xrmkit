@@ -2,6 +2,19 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions are 0.x: expect changes between releases.
 
+## [0.9.1] - 2026-11-10
+
+### Changed
+- The interface language follows the browser language until you pick one (English unless the browser is set to French). It used to always start in French.
+- Explaining a plug-in trace with the AI now asks for a confirmation that names the configured provider. The button no longer says the trace goes to Anthropic whatever the provider is.
+
+### Fixed
+- 74 screen texts (help paragraphs, labels, empty states) were still in French in the English interface.
+- The environment comparison showed a raw JavaScript error when information about the current tab was missing.
+
+### Added
+- Tests that fail if French text shows up in the English interface, and a test for the default language.
+
 ## [0.9.0] - 2026-11-06
 
 ### Added
