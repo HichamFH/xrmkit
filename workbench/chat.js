@@ -313,7 +313,7 @@ function buildChatEl() {
   }
 
   function drawFoot() {
-    getAiCfg().then((cfg) => { foot.textContent = `${AI_PROVIDERS[cfg.provider].label} · ≈ ${chat.conv.tokens || 0} tokens cette conversation (estimation) · l'IA peut se tromper : vérifiez avant d'appliquer.`; });
+    getAiCfg().then((cfg) => { foot.textContent = T(`${AI_PROVIDERS[cfg.provider].label} · ≈ ${chat.conv.tokens || 0} tokens cette conversation (estimation) · l'IA peut se tromper : vérifiez avant d'appliquer.`); });
   }
 
   function renderAction(a, msg) {

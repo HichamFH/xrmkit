@@ -36,7 +36,7 @@ test('workbench: tabs render, reports generate, English UI is translated', async
     url: 'file://' + WB + 'workbench.html?tabId=1#pmap', runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(w) {
       w.matchMedia = w.matchMedia || (() => ({ matches: false, addEventListener() {}, addListener() {} }));
-      const store = {};
+      const store = { lang: 'fr' }; // the test drives the French interface first, then switches to English
       w.chrome = {
         runtime: { lastError: null, getURL: (x) => x },
         storage: { local: { async get(k) { const o = {}; [].concat(typeof k === 'string' ? k : Array.isArray(k) ? k : Object.keys(k || {})).forEach((x) => { if (x in store) o[x] = store[x]; }); return o; }, async set(o) { Object.assign(store, o); } } },

@@ -18,6 +18,8 @@ const I18N = {
   },
   tab(id, kind, fallback) { const t = this.tabs[this.lang]; return (t && t[kind][id]) || fallback; },
   async init() {
+    // Sans choix enregistré : la langue du navigateur (français pour fr*, anglais sinon).
+    this.lang = /^fr\b/i.test((typeof navigator !== 'undefined' && navigator.language) || '') ? 'fr' : 'en';
     try { const st = await chrome.storage.local.get('lang'); if (st.lang && this.langs[st.lang]) this.lang = st.lang; } catch (e) { /* ignore */ }
     document.documentElement.lang = this.lang;
   },
