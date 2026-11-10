@@ -63,7 +63,7 @@ Les domaines pris en charge sont `dynamics.com`, `microsoftdynamics.us`, `appspl
 
 ### Depuis le paquet de version
 
-1. Téléchargez le dernier `xrmkit-x.y.z.zip` et décompressez-le. Vous obtenez un dossier `xrmkit` qui contient `manifest.json`.
+1. Téléchargez le dernier `xrmkit-x.y.z.zip` (les paquets de version sont rangés dans le dossier [`dist/`](dist) de ce dépôt) et décompressez-le. Vous obtenez un dossier `xrmkit` qui contient `manifest.json`.
 2. Ouvrez `chrome://extensions` et activez le **Mode développeur** (en haut à droite).
 3. Cliquez sur **Charger l'extension non empaquetée** et choisissez le dossier `xrmkit`.
 4. Ouvrez votre application Dynamics 365 et rechargez la page (F5) si elle était déjà ouverte.

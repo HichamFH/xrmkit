@@ -7,3 +7,4 @@
 /.gitattributes export-ignore
 /CHANGELOG.md export-ignore
 /README.fr.md export-ignore
+/dist export-ignore

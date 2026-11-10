@@ -63,7 +63,7 @@ Supported domains are `dynamics.com`, `microsoftdynamics.us`, `appsplatform.us` 
 
 ### From the release package
 
-1. Download the latest `xrmkit-x.y.z.zip` and unzip it. You get a folder called `xrmkit` with `manifest.json` inside.
+1. Download the latest `xrmkit-x.y.z.zip` (release packages are kept in the [`dist/`](dist) folder of this repository) and unzip it. You get a folder called `xrmkit` with `manifest.json` inside.
 2. Open `chrome://extensions` and turn on **Developer mode** (top right).
 3. Click **Load unpacked** and choose the `xrmkit` folder.
 4. Open your Dynamics 365 app and reload the page (F5) if it was already open.
