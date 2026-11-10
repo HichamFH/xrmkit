@@ -130,7 +130,7 @@ tabs.cmp = async (root) => {
     info = await discoverOtherEnvs();
     sel = h('select', {}, info.others.map((e) => h('option', { value: String(e.tid) }, `${e.org} — ${e.url.replace('https://', '')}`)));
     envBox.replaceChildren(
-      h('p', {}, h('b', {}, 'A (cet onglet) : '), `${info.mine['Organisation (nom unique)'] || '?'} — ${(info.mine.URL || '').replace('https://', '')}`),
+      h('p', {}, h('b', {}, 'A (cet onglet) : '), `${(info.mine || {})['Organisation (nom unique)'] || '?'} — ${((info.mine || {}).URL || '').replace('https://', '')}`),
       info.others.length
         ? h('div', { class: 'toolbar' }, h('b', {}, 'B : '), sel, h('button', { class: 'primary', onclick: run }, 'Comparer en direct'), h('button', { onclick: () => refreshEnvs() }, 'Actualiser'))
         : h('div', {}, h('p', { class: 'alert' }, 'Aucun autre environnement détecté. Ouvrez l\'autre environnement (ex. UAT) dans un autre onglet Chrome, connectez-vous et attendez le chargement complet de l\'application, puis cliquez sur Actualiser. Les deux onglets doivent rester ouverts pendant la comparaison.'),
@@ -151,7 +151,7 @@ tabs.cmp = async (root) => {
         loadEnvData(tabId, cats, (d, t) => { na = d; prog.set(`A : ${na}/${t} — B : ${nb}/${t}`); }),
         loadEnvData(other.tid, cats, (d, t) => { nb = d; prog.set(`A : ${na}/${t} — B : ${nb}/${t}`); }),
       ]);
-      const A = { ...a, name: info.mine['Organisation (nom unique)'] || 'A', url: info.mine.URL || '' };
+      const A = { ...a, name: (info.mine || {})['Organisation (nom unique)'] || 'A', url: (info.mine || {}).URL || '' };
       const B = { ...b, name: other.org, url: other.url };
       const diff = diffEnvs(A, B, cats);
       const main = diff.filter((d) => !CMP_INFO_ONLY.includes(d['Catégorie']));
