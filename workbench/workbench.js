@@ -546,13 +546,16 @@ tabs.traces = async (root) => {
           h('h2', {}, 'Détail de la trace'), h('pre', {}, text),
           h('button', {
             onclick: async (e) => {
+              const cfg = await getAiCfg().catch(() => ({ provider: 'anthropic' }));
+              const who = (AI_PROVIDERS[cfg.provider] || {}).label || 'le fournisseur IA';
+              if (!(await confirmBox(`La trace et l'exception ci-dessus seront envoyées à ${who}. Elles peuvent contenir des données d'enregistrements${cfg.mask === false ? '' : ' (e-mails, téléphones et IBAN sont masqués)'}.`, { confirmText: 'Envoyer à l\'IA' }))) return;
               e.target.disabled = true; ai.hidden = false; ai.textContent = 'Analyse en cours…';
               try {
                 ai.textContent = await askAI('Tu es un expert des plug-ins Dynamics 365 / Dataverse. Explique la cause probable de cette trace/erreur et propose des corrections concrètes. Réponds en français, de façon concise.', text.slice(0, 12000));
               } catch (err) { ai.textContent = err.message; }
               e.target.disabled = false;
             },
-          }, 'Expliquer avec l\'IA (envoie la trace à l\'API Anthropic)'), ai);
+          }, 'Expliquer avec l\'IA (envoie la trace au fournisseur IA configuré)'), ai);
       },
     });
   });
