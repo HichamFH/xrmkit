@@ -60,10 +60,6 @@ copie ID / URL / entité / URL API Web · ouverture par ID ou liste · Recherche
 ## Cloudflare Workers AI en direct
 Account ID + jeton API avec la permission « Workers AI » ; modèle par défaut `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
 
-## Limites connues (v0.2)
-- Non testée sur un vrai environnement : logique validée par tests unitaires et un test de fumée avec backend simulé. Les détails de `flowruns`, `RetrievePrincipalAccess`, `RetrieveRolePrivilegesRole` et `RetrieveCurrentOrganization` sont au mieux de l'effort.
-- Les outils d'écriture (import, modification en masse, données de test, activation d'étapes) sont à utiliser d'abord en dev/test.
-
 ## Notes
 - Toutes les requêtes Web API passent par l'onglet Dynamics (même origine, session de l'utilisateur) : aucun jeton à gérer.
 - Comparer deux environnements : capturer un instantané dans chacun (un Workbench par environnement), puis comparer.
