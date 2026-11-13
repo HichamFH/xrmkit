@@ -1,6 +1,6 @@
 {
   "name": "xrmkit",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
   "description": "Chrome extension for Dynamics 365 and Power Platform model-driven apps. The extension itself has no build step and no runtime dependencies; this file only declares the test tooling.",
   "scripts": {

@@ -2,6 +2,12 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions are 0.x: expect changes between releases.
 
+## [0.9.2] - 2026-11-13
+
+### Changed
+- The extension is now named "Xrmkit" in the browser and in the store. "for Dynamics 365" stays in the description, so the name no longer carries a Microsoft trademark.
+- Shorter store description that also names Power Platform.
+
 ## [0.9.1] - 2026-11-10
 
 ### Changed
